@@ -1,0 +1,8 @@
+[auth]
+token = "someLongDiscordString" # discord bot token
+database_url = "postgresql://postgres:postgres@localhost/postgres" # postgres connection url
+
+[bot]
+prefixes = ["tk;", "tk!"] # prefixes
+bot_owners = ["0"] # bot owner IDs
+log_webhook = "" # webhook to log errors to
