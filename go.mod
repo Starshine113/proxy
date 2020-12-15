@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	codeberg.org/eviedelta/drc v0.0.0-20201014114604-c0facdfd1b01
-	codeberg.org/eviedelta/dwhook v0.0.0-20201015021046-043084b306b3
+	codeberg.org/eviedelta/dwhook v0.0.0-20201214045538-c31ad297e0e6
 	github.com/BurntSushi/toml v0.3.1
 	github.com/ReneKroon/ttlcache v1.7.0
 	github.com/ReneKroon/ttlcache/v2 v2.1.0

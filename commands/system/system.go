@@ -84,6 +84,23 @@ func Init(r *router.Router) {
 
 		Command: list,
 	})
+
+	g.AddCommand(&router.Command{
+		Name: "Proxy",
+
+		Description: "Enable or disable proxying in this server",
+
+		Command: proxy,
+	})
+
+	r.AddCommand(&router.Command{
+		Name:    "AutoProxy",
+		Aliases: []string{"AP"},
+
+		Description: "Set the autoproxy mode",
+
+		Command: autoproxy,
+	})
 }
 
 func new(ctx *router.Ctx) (err error) {

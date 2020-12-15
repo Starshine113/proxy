@@ -2,6 +2,8 @@ codeberg.org/eviedelta/drc v0.0.0-20201014114604-c0facdfd1b01 h1:gz2Z+2mG8oAFn8m
 codeberg.org/eviedelta/drc v0.0.0-20201014114604-c0facdfd1b01/go.mod h1:l2pJBwFRGzurPFpQS0VZCZmu+AUzdd+m9/qPvVAuTk0=
 codeberg.org/eviedelta/dwhook v0.0.0-20201015021046-043084b306b3 h1:CrvAMoJEPtx0O8aPzRDbPlevE4AArX4fNS7BqJWkH5E=
 codeberg.org/eviedelta/dwhook v0.0.0-20201015021046-043084b306b3/go.mod h1:Fnh32YdiYc52GYb+yLu2fbtRQ94Tghu3oM1QVVBoQkA=
+codeberg.org/eviedelta/dwhook v0.0.0-20201214045538-c31ad297e0e6 h1:5GgbJaTYzm+QESfBYQGzJaqx9IpC6BJIpEUKmsk3aqs=
+codeberg.org/eviedelta/dwhook v0.0.0-20201214045538-c31ad297e0e6/go.mod h1:Fnh32YdiYc52GYb+yLu2fbtRQ94Tghu3oM1QVVBoQkA=
 codeberg.org/eviedelta/trit v0.0.0-20200522120239-e627923758e3/go.mod h1:Z1UZceP3eRfsfiIV/v6Gbb/0cdthSScn0tzEeQh7IwQ=
 emperror.dev/errors v0.8.0/go.mod h1:YcRvLPh626Ubn2xqtoprejnA5nFha+TJ+2vew48kWuE=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=

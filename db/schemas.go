@@ -23,7 +23,9 @@ const DBVersion = 1
 var DBVersions []string = []string{""}
 
 // initDBSql is the initial SQL database schema
-var initDBSql = `create table if not exists systems
+var initDBSql = `create type autoproxy_setting as enum ('off', 'latch', 'front', 'member');
+
+create table if not exists systems
 (
     id      uuid        not null primary key,
     name    text        not null default '',
@@ -37,7 +39,9 @@ create table if not exists system_guilds
     system  uuid        references systems (id) on delete cascade,
     guild   text        not null,
 
-    proxy_enabled bool not null default true,
+    proxy_enabled		bool				not null default true,
+	autoproxy_mode		autoproxy_setting	not null default 'off';
+	last_proxied_member text				not null default ''; 
 
     primary key (system, guild)
 );

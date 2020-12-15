@@ -51,9 +51,11 @@ func (db *Db) MessageExists(msgID string) (b bool) {
 }
 
 // GetMessage gets info about a message
-func (db *Db) GetMessage(msgID string) (m *Message, err error) {
+func (db *Db) GetMessage(msgID string) (m *Message, member *Member, s *System, err error) {
 	m = &Message{}
+	member = &Member{}
+	s = &System{}
 
-	err = db.Pool.QueryRow(context.Background(), "select id, channel, member, sender, original_id from public.messages where id = $1 or original_id = $1", msgID).Scan(&m.ID, &m.ChannelID, &m.Member, &m.Sender, &m.Original)
+	err = db.Pool.QueryRow(context.Background(), "select m.id, m.channel, m.member, m.sender, m.original_id, s.id, s.name, s.tag, mem.id, mem.name, mem.display_name, mem.avatar_url from public.messages as m, public.members as mem, public.systems as s where (m.id = $1 or m.original_id = $1) and mem.id = m.member and s.id = mem.system", msgID).Scan(&m.ID, &m.ChannelID, &m.Member, &m.Sender, &m.Original, &s.ID, &s.Name, &s.Tag, &member.ID, &member.Name, &member.DisplayName, &member.AvatarURL)
 	return
 }

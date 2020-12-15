@@ -21,11 +21,16 @@ import "github.com/Starshine113/proxy/router"
 // Init ...
 func Init(r *router.Router) {
 	r.AddCommand(&router.Command{
-		Name:        "ping",
+		Name:        "Ping",
 		Description: "Show the bot's latency",
 
-		Permissions: router.PermLevelNone,
-
 		Command: ping,
+	})
+
+	r.AddCommand(&router.Command{
+		Name:        "Help",
+		Description: "Show info about the bot",
+
+		Command: help,
 	})
 }

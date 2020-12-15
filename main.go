@@ -110,8 +110,8 @@ func initialize() *discordgo.Session {
 	if *databaseURL != "" {
 		config.Auth.DatabaseURL = *databaseURL
 	}
-	if os.Getenv("CB_DB_URL") != "" {
-		config.Auth.DatabaseURL = os.Getenv("CB_DB_URL")
+	if os.Getenv("PROXYBOT_DB_URL") != "" {
+		config.Auth.DatabaseURL = os.Getenv("PROXYBOT_DB_URL")
 	}
 
 	database, err = db.Init(config, sugar)

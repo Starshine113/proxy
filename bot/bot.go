@@ -48,5 +48,8 @@ func New(db *db.Db, s *discordgo.Session, c *structs.BotConfig, l *zap.SugaredLo
 
 	b := &Bot{Db: db, Session: s, Config: c, Sugar: l, Handlers: handlerMap, Prefix: c.Bot.Prefixes[0]}
 
+	// add ready handler for status
+	b.Session.AddHandler(b.Ready)
+
 	return b
 }

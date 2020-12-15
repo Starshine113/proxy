@@ -17,10 +17,14 @@ package proxy
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 
+	"codeberg.org/eviedelta/dwhook"
 	"github.com/Starshine113/proxy/bot"
 	"github.com/Starshine113/proxy/db"
 	"github.com/bwmarrin/discordgo"
@@ -48,6 +52,16 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		return
 	}
 
+	gs, err := p.Bot.Db.GetGuildSystem(m.Author.ID, m.GuildID)
+	if err != nil {
+		p.Bot.Sugar.Errorf("Error getting guild/system settings: %v", err)
+		return
+	}
+
+	if !gs.ProxyEnabled {
+		return
+	}
+
 	var webhook *db.Webhook
 	if !p.Bot.Db.HasWebhook(m.ChannelID) {
 		webhook, err = p.Bot.Db.CreateWebhook(s, m.ChannelID)
@@ -69,53 +83,151 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	for _, member := range members {
-		if member.Prefix != "" {
+		if member.Prefix != "" || len(m.Attachments) != 0 {
 			if strings.HasPrefix(m.Content, member.Prefix) {
 				c := strings.TrimPrefix(m.Content, member.Prefix)
-				if c != "" {
-					system, err := p.Bot.Db.GetUserSystem(m.Author.ID)
-					if err != nil {
-						p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
-						return
-					}
-
-					err = p.exec(webhook, member, system, c, m)
-					if err != nil {
-						p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
-					}
-					break
+				if c == "" && len(m.Attachments) == 0 {
+					continue
 				}
+				system, err := p.Bot.Db.GetUserSystem(m.Author.ID)
+				if err != nil {
+					p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
+					return
+				}
+
+				err = p.exec(webhook, member, system, c, m)
+				if err != nil {
+					p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
+				}
+				break
 			}
 		}
 		if member.Suffix != "" {
 			if strings.HasSuffix(m.Content, member.Suffix) {
 				c := strings.TrimSuffix(m.Content, member.Suffix)
-				if c != "" {
-					system, err := p.Bot.Db.GetUserSystem(m.Author.ID)
-					if err != nil {
-						p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
-						return
-					}
+				if c == "" && len(m.Attachments) == 0 {
+					continue
+				}
+				system, err := p.Bot.Db.GetUserSystem(m.Author.ID)
+				if err != nil {
+					p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
+					return
+				}
 
-					err = p.exec(webhook, member, system, c, m)
-					if err != nil {
-						p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
-					}
-					break
+				err = p.exec(webhook, member, system, c, m)
+				if err != nil {
+					p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
+				}
+				break
+			}
+		}
+	}
+
+	// try autoproxy
+}
+
+func (p *Proxy) exec(w *db.Webhook, m *db.Member, s *db.System, content string, msg *discordgo.MessageCreate) (err error) {
+	perms, err := p.Session.State.UserChannelPermissions(msg.Author.ID, msg.ChannelID)
+	if err == discordgo.ErrStateNotFound {
+		perms, err = p.Session.UserChannelPermissions(msg.Author.ID, msg.ChannelID)
+	}
+	if err != nil {
+		return err
+	}
+
+	var mentions *discordgo.MessageAllowedMentions
+	// if the user can mention @everyone/@here, mirror that permission
+	if perms&discordgo.PermissionMentionEveryone == discordgo.PermissionMentionEveryone {
+		mentions = &discordgo.MessageAllowedMentions{
+			Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeRoles, discordgo.AllowedMentionTypeUsers, discordgo.AllowedMentionTypeEveryone},
+		}
+	} else {
+		mentions = &discordgo.MessageAllowedMentions{
+			Parse: []discordgo.AllowedMentionType{discordgo.AllowedMentionTypeUsers},
+			Roles: make([]string, 0),
+		}
+		roles, err := p.Session.GuildRoles(msg.GuildID)
+		if err == nil {
+			for _, r := range roles {
+				if r.Mentionable {
+					mentions.Roles = append(mentions.Roles, r.ID)
 				}
 			}
 		}
 	}
-}
+	embeds := make([]*discordgo.MessageEmbed, 0)
+	if perms&discordgo.PermissionEmbedLinks == discordgo.PermissionEmbedLinks {
+		if len(msg.Embeds) != 0 {
+			embeds = msg.Embeds
+		}
+	}
 
-func (p *Proxy) exec(w *db.Webhook, m *db.Member, s *db.System, content string, msg *discordgo.MessageCreate) (err error) {
-	proxy, err := p.Session.WebhookExecute(w.ID, w.Token, true, &discordgo.WebhookParams{
-		Content:   content,
-		Username:  fmt.Sprintf("%v %v", m.DisplayedName(), s.Tag),
-		AvatarURL: m.AvatarURL,
-	})
-	if err != nil {
-		return err
+	var proxy *discordgo.Message
+	if len(msg.Attachments) == 0 {
+		proxy, err = p.Session.WebhookExecute(w.ID, w.Token, true, &discordgo.WebhookParams{
+			Content:         content,
+			Username:        fmt.Sprintf("%v %v", m.DisplayedName(), s.Tag),
+			AvatarURL:       m.AvatarURL,
+			AllowedMentions: mentions,
+			Embeds:          embeds,
+		})
+		if err != nil {
+			return err
+		}
+	} else if len(msg.Attachments) == 1 {
+		var mentions dwhook.AllowedMentions
+		// if the user can mention @everyone/@here, mirror that permission
+		if perms&discordgo.PermissionMentionEveryone == discordgo.PermissionMentionEveryone {
+			mentions = dwhook.AllowedMentions{
+				Parse: []string{dwhook.MentionRoles, dwhook.MentionUsers, dwhook.MentionEveryone},
+			}
+		} else {
+			mentions = dwhook.AllowedMentions{
+				Parse: []string{dwhook.MentionUsers},
+				Roles: make([]string, 0),
+			}
+			roles, err := p.Session.GuildRoles(msg.GuildID)
+			if err == nil {
+				for _, r := range roles {
+					if r.Mentionable {
+						mentions.Roles = append(mentions.Roles, r.ID)
+					}
+				}
+			}
+		}
+
+		resp, err := http.Get(msg.Attachments[0].URL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		b, err := ioutil.ReadAll(resp.Body)
+
+		if len(b) > 8*1000*1000 {
+			_, err = p.Bot.Session.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("❌ This message cannot be proxied, its attachment is too large (%v MB > 8 MB).\nUnfortunately webhooks aren't considered to have Discord Nitro :(", int(len(b)/1024/1024)))
+			return err
+		}
+
+		b, err = dwhook.SendFileToToken(w.ID, w.Token, dwhook.Message{
+			Content:         content,
+			Username:        fmt.Sprintf("%v %v", m.DisplayedName(), s.Tag),
+			AvatarURL:       m.AvatarURL,
+			AllowedMentions: mentions,
+		}, msg.Attachments[0].Filename, b)
+		if err != nil {
+			return err
+		}
+		if err = json.Unmarshal(b, &proxy); err != nil {
+			return err
+		}
+	} else {
+		msg, err := p.Session.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("❌ Unfortunately, %v doesn't support proxying multiple attachments in one file, %v :(", p.Bot.Session.State.User.Username, msg.Author.Mention()))
+		if err != nil {
+			return err
+		}
+		time.Sleep(10 * time.Second)
+		return p.Session.ChannelMessageDelete(msg.ChannelID, msg.ID)
 	}
 
 	err = p.Bot.Db.SaveMessage(proxy.ID, proxy.ChannelID, m.ID.String(), msg.Author.ID, msg.ID)

@@ -27,15 +27,15 @@ import (
 // CommandError sends an error message and optionally returns an error for logging purposes
 func (ctx *Ctx) CommandError(err error) error {
 	switch err {
-	case ErrorNoDMs, ErrorMissingBotOwner, ErrorMissingManagerPerms:
-		ctx.React(WarnEmoji)
-		_, msgErr := ctx.Send(&discordgo.MessageSend{
-			Content: WarnEmoji + " You are not allowed to use this command:\n> " + err.Error(),
-			AllowedMentions: &discordgo.MessageAllowedMentions{
-				Parse: []discordgo.AllowedMentionType{},
-			},
-		})
-		return msgErr
+	case ErrorNoDMs:
+		_, err := ctx.Sendf("%v This command cannot be used in DMs.", ErrorEmoji)
+		return err
+	case ErrorMissingBotOwner:
+		_, err := ctx.Sendf("%v You need to be the bot owner to use this command.", ErrorEmoji)
+		return err
+	case ErrorMissingManagerPerms:
+		_, err := ctx.Sendf("%v You need the *Manage Server* permission to use this command.", ErrorEmoji)
+		return err
 	case ErrorNotEnoughArgs:
 		ctx.React(WarnEmoji)
 		_, msgErr := ctx.Send(&discordgo.MessageSend{
