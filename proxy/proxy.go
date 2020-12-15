@@ -83,7 +83,7 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	for _, member := range members {
-		if member.Prefix != "" || len(m.Attachments) != 0 {
+		if member.Prefix != "" {
 			if strings.HasPrefix(m.Content, member.Prefix) {
 				c := strings.TrimPrefix(m.Content, member.Prefix)
 				if c == "" && len(m.Attachments) == 0 {
