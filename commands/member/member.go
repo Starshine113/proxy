@@ -74,4 +74,14 @@ func Init(r *router.Router) {
 
 		Command: displayName,
 	})
+
+	g.AddCommand(&router.Command{
+		Name:    "Delete",
+		Aliases: []string{"Yeet"},
+
+		Description: "Delete a member",
+		Usage:       "<name/ID>",
+
+		Command: memberDelete,
+	})
 }

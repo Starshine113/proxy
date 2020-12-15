@@ -138,3 +138,15 @@ func (db *Db) SetDisplayName(uuid, name string) (err error) {
 	}
 	return
 }
+
+// DeleteMember deletes a member
+func (db *Db) DeleteMember(uuid string) (err error) {
+	commandTag, err := db.Pool.Exec(context.Background(), "delete from public.members where id = $1", uuid)
+	if err != nil {
+		return
+	}
+	if commandTag.RowsAffected() != 1 {
+		return ErrorNoRowsAffected
+	}
+	return
+}
