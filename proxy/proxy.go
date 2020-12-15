@@ -124,6 +124,32 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	// try autoproxy
+	if gs.AutoproxyMode == db.AutoproxyModeOff {
+		return
+	}
+
+	if gs.AutoproxyMode == db.AutoproxyModeLatch {
+		if gs.LastProxiedMember == "" {
+			return
+		}
+
+		member, err := p.Bot.Db.Member(gs.LastProxiedMember)
+		if err != nil {
+			p.Bot.Sugar.Errorf("Error fetching latch member %v: %v", gs.LastProxiedMember, err)
+			return
+		}
+
+		system, err := p.Bot.Db.GetUserSystem(m.Author.ID)
+		if err != nil {
+			p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
+			return
+		}
+
+		err = p.exec(webhook, member, system, m.Content, m)
+		if err != nil {
+			p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
+		}
+	}
 }
 
 func (p *Proxy) exec(w *db.Webhook, m *db.Member, s *db.System, content string, msg *discordgo.MessageCreate) (err error) {
@@ -233,6 +259,13 @@ func (p *Proxy) exec(w *db.Webhook, m *db.Member, s *db.System, content string, 
 	err = p.Bot.Db.SaveMessage(proxy.ID, proxy.ChannelID, m.ID.String(), msg.Author.ID, msg.ID)
 	if err != nil {
 		return err
+	}
+
+	// update last-proxied system/guild member
+	err = p.Bot.Db.SetLastProxiedMember(s.ID.String(), msg.GuildID, m.ID.String())
+	if err != nil {
+		p.Bot.Sugar.Errorf("Error saving last-proxied member: %v", err)
+		return nil
 	}
 
 	// wait a second before doing post-proxy tasks

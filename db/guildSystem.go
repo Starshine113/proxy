@@ -56,3 +56,27 @@ func (db *Db) SetGuildProxy(systemID, guildID string, enable bool) (err error) {
 	}
 	return
 }
+
+// SetLastProxiedMember sets the member that proxied last in the server
+func (db *Db) SetLastProxiedMember(systemID, guildID, memberID string) (err error) {
+	commandTag, err := db.Pool.Exec(context.Background(), "update public.system_guilds set last_proxied_member = $1 where system = $2 and guild = $3", memberID, systemID, guildID)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return ErrorNoRowsAffected
+	}
+	return
+}
+
+// SetAutoproxyMode sets the autoproxy mode for a server
+func (db *Db) SetAutoproxyMode(userID, guildID, mode string) (err error) {
+	commandTag, err := db.Pool.Exec(context.Background(), "update public.system_guilds set autoproxy_mode = $1 where system = (select system from accounts where account = $2) and guild = $3", mode, userID, guildID)
+	if err != nil {
+		return err
+	}
+	if commandTag.RowsAffected() != 1 {
+		return ErrorNoRowsAffected
+	}
+	return
+}

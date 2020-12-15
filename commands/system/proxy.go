@@ -52,7 +52,7 @@ func proxy(ctx *router.Ctx) (err error) {
 			if err != nil {
 				return ctx.CommandError(err)
 			}
-			_, err = ctx.Sendf("%v Disabled proxying in this server for your system", router.SuccessEmoji)
+			_, err = ctx.Sendf("%v Disabled proxying in this server for your system.", router.SuccessEmoji)
 		case "on", "enable":
 			if gs.ProxyEnabled {
 				_, err = ctx.Sendf("%v Proxying in this server is already enabled for your system. To disable it, use `%vsystem proxy off`.", router.ErrorEmoji, ctx.Bot.Prefix)
@@ -62,7 +62,7 @@ func proxy(ctx *router.Ctx) (err error) {
 			if err != nil {
 				return ctx.CommandError(err)
 			}
-			_, err = ctx.Sendf("%v Enabled proxying in this server for your system", router.SuccessEmoji)
+			_, err = ctx.Sendf("%v Enabled proxying in this server for your system.", router.SuccessEmoji)
 		}
 	}
 
