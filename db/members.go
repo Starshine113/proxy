@@ -33,6 +33,9 @@ type Member struct {
 	Prefix      string
 	Suffix      string
 	Created     time.Time
+
+	// MessageCount will most likely be 0 unless specifically asked for
+	MessageCount int
 }
 
 // DisplayedName returns the displayed name--either display name or normal name
@@ -49,6 +52,24 @@ func (db *Db) Member(uuid string) (m *Member, err error) {
 
 	err = db.Pool.QueryRow(context.Background(), "select id, system, avatar_url, name, display_name, prefix, suffix, created from public.members where id = $1", uuid).Scan(&m.ID, &m.System, &m.AvatarURL, &m.Name, &m.DisplayName, &m.Prefix, &m.Suffix, &m.Created)
 	return m, err
+}
+
+// MemberWithMsgCount returns the member with message count
+func (db *Db) MemberWithMsgCount(uuid string) (m *Member, err error) {
+	m = &Member{}
+
+	err = db.Pool.QueryRow(context.Background(), "select id, system, avatar_url, name, display_name, prefix, suffix, created from public.members where id = $1", uuid).Scan(&m.ID, &m.System, &m.AvatarURL, &m.Name, &m.DisplayName, &m.Prefix, &m.Suffix, &m.Created)
+	if err != nil {
+		return m, err
+	}
+
+	c, err := db.MessageCount(uuid)
+	if err != nil {
+		return m, err
+	}
+
+	m.MessageCount = c
+	return
 }
 
 // GetSystemMembers gets all members for a system by UUID

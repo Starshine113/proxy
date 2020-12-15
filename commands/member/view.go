@@ -56,6 +56,11 @@ func view(ctx *router.Ctx) (err error) {
 		return
 	}
 
+	m, err = ctx.Database.MemberWithMsgCount(m.ID.String())
+	if err != nil {
+		return ctx.CommandError(err)
+	}
+
 	_, err = ctx.Send(memberCard(s, m))
 	return err
 }
@@ -85,6 +90,10 @@ func memberCard(s *db.System, m *db.Member) *discordgo.MessageEmbed {
 	}
 
 	fields = append(fields, &discordgo.MessageEmbedField{
+		Name:   "Message count",
+		Value:  fmt.Sprint(m.MessageCount),
+		Inline: true,
+	}, &discordgo.MessageEmbedField{
 		Name:   "** **",
 		Value:  fmt.Sprintf("Member ID: `%s`\nSystem ID: `%s`", m.ID, s.ID),
 		Inline: false,

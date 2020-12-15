@@ -59,3 +59,9 @@ func (db *Db) GetMessage(msgID string) (m *Message, member *Member, s *System, e
 	err = db.Pool.QueryRow(context.Background(), "select m.id, m.channel, m.member, m.sender, m.original_id, s.id, s.name, s.tag, mem.id, mem.name, mem.display_name, mem.avatar_url from public.messages as m, public.members as mem, public.systems as s where (m.id = $1 or m.original_id = $1) and mem.id = m.member and s.id = mem.system", msgID).Scan(&m.ID, &m.ChannelID, &m.Member, &m.Sender, &m.Original, &s.ID, &s.Name, &s.Tag, &member.ID, &member.Name, &member.DisplayName, &member.AvatarURL)
 	return
 }
+
+// MessageCount gets the message count for a member
+func (db *Db) MessageCount(member string) (count int, err error) {
+	err = db.Pool.QueryRow(context.Background(), "select count(id) from public.messages where member = $1", member).Scan(&count)
+	return
+}
