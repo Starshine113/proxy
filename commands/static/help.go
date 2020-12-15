@@ -16,6 +16,12 @@ func help(ctx *router.Ctx) (err error) {
 		Name: "Setting up your system",
 		Value: fmt.Sprintf("**1.** `%vs rename New Name` - change your system name\n**2.** `%vs tag | New Tag` - change your system tag, which will show up after a proxied member's name", ctx.Bot.Prefix, ctx.Bot.Prefix),
 	}, {
+		Name: "Reacting to messages",
+		Value: "React to a message with ❓ to get more information on the member and account that sent it. React with 🔔 (or 🏓) to ping the user associated with the account.\nThe person who sent the message can react with ❌ to remove it.",
+	}, {
+		Name: "Autoproxy",
+		Value: fmt.Sprintf("To avoid having to proxy every message manually, you can enable autoproxy with `%vautoproxy latch`.\n\nTip: when autoproxying, to send a single proxied message, prepend it with one backslash (\\\\). To \"un-latch\" entirely, prefix it with two backslashes (\\\\\\\\).", ctx.Bot.Prefix),
+	}, {
 		Name: "Invite the bot",
 		Value: fmt.Sprintf("To invite the bot to your server, use [this](%v) link.", ctx.Invite()),
 	}})
