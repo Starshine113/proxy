@@ -1,5 +1,7 @@
 package router
 
+// Unlike other files, this one is licensed under the MIT license.
+
 import (
 	"errors"
 	"regexp"
