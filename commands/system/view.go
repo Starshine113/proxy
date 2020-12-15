@@ -18,6 +18,7 @@ package system
 
 import (
 	"fmt"
+	"github.com/Starshine113/proxy/etc"
 	"strings"
 	"time"
 
@@ -46,7 +47,7 @@ func view(ctx *router.Ctx) (err error) {
 		return ctx.CommandError(err)
 	}
 
-	users := strings.Join(router.PrintfAll("<@%v>", u), "\n")
+	users := strings.Join(etc.PrintfAll("<@%v>", u), "\n")
 
 	fields := make([]*discordgo.MessageEmbedField, 0)
 

@@ -18,6 +18,7 @@ package member
 
 import (
 	"fmt"
+	"github.com/Starshine113/proxy/etc"
 	"strings"
 
 	"github.com/Starshine113/proxy/db"
@@ -82,7 +83,7 @@ func changeAvatar(m *db.Member, ctx *router.Ctx) (err error) {
 		}
 
 		// it's not a member (or the fetch failed), so try if it's an image
-		if router.HasAnySuffix(ctx.Args[1], ".jpg", ".jpeg", ".png", ".gif", ".webp") {
+		if etc.HasAnySuffix(ctx.Args[1], ".jpg", ".jpeg", ".png", ".gif", ".webp") {
 			err = ctx.Database.SetAvatar(m.ID.String(), ctx.Args[1])
 			if err != nil {
 				return ctx.CommandError(err)
@@ -106,7 +107,7 @@ func changeAvatar(m *db.Member, ctx *router.Ctx) (err error) {
 
 	a := ctx.Message.Attachments[0]
 
-	if router.HasAnySuffix(a.URL, ".jpg", ".jpeg", ".png", ".gif", ".webp") {
+	if etc.HasAnySuffix(a.URL, ".jpg", ".jpeg", ".png", ".gif", ".webp") {
 		err = ctx.Database.SetAvatar(m.ID.String(), a.URL)
 		if err != nil {
 			return ctx.CommandError(err)

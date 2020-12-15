@@ -17,13 +17,14 @@ package router
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import (
+	"github.com/Starshine113/proxy/etc"
 	"regexp"
 	"strings"
 )
 
 // MatchPrefix checks if the message matched any prefix
 func (ctx *Ctx) MatchPrefix() bool {
-	return HasAnyPrefix(strings.ToLower(ctx.Message.Content), ctx.Bot.Config.Bot.Prefixes...)
+	return etc.HasAnyPrefix(strings.ToLower(ctx.Message.Content), ctx.Bot.Config.Bot.Prefixes...)
 }
 
 // Match checks if any of the given command aliases match

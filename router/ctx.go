@@ -18,6 +18,7 @@ package router
 
 import (
 	"errors"
+	"github.com/Starshine113/proxy/etc"
 	"strings"
 
 	"github.com/Starshine113/proxy/bot"
@@ -60,7 +61,7 @@ var (
 
 // Context creates a new Ctx
 func Context(prefixes []string, messageContent string, m *discordgo.MessageCreate, b *bot.Bot) (ctx *Ctx, err error) {
-	messageContent = TrimPrefixesSpace(messageContent, prefixes...)
+	messageContent = etc.TrimPrefixesSpace(messageContent, prefixes...)
 	message := strings.Split(messageContent, " ")
 	command := message[0]
 	args := []string{}
