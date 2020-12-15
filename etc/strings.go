@@ -1,4 +1,4 @@
-package router
+package etc
 
 // Discord proxy bot
 // Copyright (C) 2020  Starshine System
