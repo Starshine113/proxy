@@ -40,8 +40,8 @@ create table if not exists system_guilds
     guild   text        not null,
 
     proxy_enabled		bool				not null default true,
-	autoproxy_mode		autoproxy_setting	not null default 'off';
-	last_proxied_member text				not null default ''; 
+	autoproxy_mode		autoproxy_setting	not null default 'off',
+	last_proxied_member text				not null default '',
 
     primary key (system, guild)
 );
@@ -53,8 +53,8 @@ create table if not exists members
     avatar_url   text           not null default '',
     name         text           not null,
     display_name text           not null default '',
-    prefix       text           not null default '';
-    suffix       text           not null default '';
+    prefix       text           not null default '',
+    suffix       text           not null default '',
     created      timestamp      not null default (current_timestamp at time zone 'utc')
 );
 
