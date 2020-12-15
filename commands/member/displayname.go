@@ -61,6 +61,11 @@ func displayName(ctx *router.Ctx) (err error) {
 		}
 	}
 
+	if m == nil {
+		_, err = ctx.Sendf("%v Member `%v` not found.\n**Note:** if the member has spaces in their name, you need to use the ID.", router.ErrorEmoji, member)
+		return
+	}
+
 	err = ctx.Database.SetDisplayName(m.ID.String(), name)
 	if err != nil {
 		return ctx.CommandError(err)

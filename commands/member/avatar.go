@@ -54,6 +54,11 @@ func avatar(ctx *router.Ctx) (err error) {
 		}
 	}
 
+	if m == nil {
+		_, err = ctx.Sendf("%v Member `%v` not found.\n**Note:** if the member has spaces in their name, you need to use the ID.", router.ErrorEmoji, member)
+		return
+	}
+
 	if len(ctx.Args) == 1 {
 		if len(ctx.Message.Attachments) == 0 {
 			return viewAvatar(m, ctx)
