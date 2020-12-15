@@ -128,6 +128,22 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 		return
 	}
 
+	// if the message starts with \, don't proxy
+	if strings.HasPrefix(m.Content, "\\") {
+		// if it starts with \\, "un-latch"
+		if strings.HasPrefix(m.Content, "\\\\") {
+			sys, err := p.Bot.Db.GetUserSystem(m.Author.ID)
+			if err != nil {
+				p.Bot.Sugar.Errorf("Error getting system for %v: %v", m.Author.ID, err)
+			}
+			err = p.Bot.Db.SetLastProxiedMember(sys.ID.String(), m.GuildID, "")
+			if err != nil {
+				p.Bot.Sugar.Errorf("Error removing last-proxied member: %v", err)
+			}
+		}
+		return
+	}
+
 	if gs.AutoproxyMode == db.AutoproxyModeLatch {
 		if gs.LastProxiedMember == "" {
 			return
