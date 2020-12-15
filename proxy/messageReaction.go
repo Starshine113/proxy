@@ -19,7 +19,7 @@ package proxy
 import (
 	"fmt"
 	"github.com/Starshine113/proxy/db"
-
+	"github.com/Starshine113/proxy/etc"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -62,7 +62,10 @@ func (p *Proxy) ReactionAdd(_ *discordgo.Session, r *discordgo.MessageReactionAd
 }
 
 func (p *Proxy) messageInfo(r *discordgo.MessageReactionAdd, m *db.Message, member *db.Member, s *db.System) (err error) {
-	p.Session.MessageReactionRemove(m.ChannelID, m.ID, r.MessageReaction.Emoji.APIName(), r.UserID)
+	err = p.Session.MessageReactionRemove(m.ChannelID, m.ID, r.MessageReaction.Emoji.APIName(), r.UserID)
+	if err != nil {
+		p.Bot.Sugar.Errorf("Error removing reaction for %v on %v: %v", r.UserID, m.ID, err)
+	}
 	c, err := p.Session.UserChannelCreate(r.UserID)
 	if err != nil {
 		p.Bot.Sugar.Errorf("Error creating user channel for %v: %v", r.UserID, err)
@@ -88,6 +91,20 @@ func (p *Proxy) messageInfo(r *discordgo.MessageReactionAdd, m *db.Message, memb
 		return err
 	}
 
+	var a *discordgo.MessageEmbedImage
+	if len(msg.Attachments) > 0 {
+		if etc.HasAnySuffix(msg.Attachments[0].Filename, ".png", ".jpg", ".jpeg", ".gif", ".webp") {
+			a = &discordgo.MessageEmbedImage{
+				URL: msg.Attachments[0].URL,
+			}
+		}
+	}
+
+	content := msg.Content
+	if msg.Content == "" {
+		content = "[None]"
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			IconURL: member.AvatarURL,
@@ -97,7 +114,8 @@ func (p *Proxy) messageInfo(r *discordgo.MessageReactionAdd, m *db.Message, memb
 			URL: member.AvatarURL,
 		},
 		Title:       "Message",
-		Description: msg.Content,
+		Description: content,
+		Image:       a,
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Display name",
@@ -105,14 +123,14 @@ func (p *Proxy) messageInfo(r *discordgo.MessageReactionAdd, m *db.Message, memb
 				Inline: true,
 			},
 			{
-				Name:   "System",
-				Value:  sys,
-				Inline: true,
-			},
-			{
 				Name:   "Tag",
 				Value:  tag,
 				Inline: true,
+			},
+			{
+				Name:   "System",
+				Value:  sys,
+				Inline: false,
 			},
 			{
 				Name:   "Member",
