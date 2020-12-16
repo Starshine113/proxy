@@ -99,7 +99,7 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 				if err != nil {
 					p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
 				}
-				break
+				return
 			}
 		}
 		if member.Suffix != "" {
@@ -118,7 +118,7 @@ func (p *Proxy) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) 
 				if err != nil {
 					p.Bot.Sugar.Errorf("Error executing proxy: %v", err)
 				}
-				break
+				return
 			}
 		}
 	}
